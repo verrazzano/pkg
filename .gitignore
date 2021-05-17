@@ -1,0 +1,10 @@
+# Copyright (c) 2021, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+vendor
+# Temporary Build Files
+build/_output
+build/_test
+.idea
+known_licenses.txt
+no_licenses.txt
+thirdparty_licenses
