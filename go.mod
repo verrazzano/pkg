@@ -9,6 +9,10 @@ require (
 	github.com/google/go-cmp v0.5.0
 	github.com/stretchr/testify v1.6.1
 	k8s.io/api v0.19.0
+	k8s.io/apimachinery v0.21.1
 )
 
-replace k8s.io/api => k8s.io/api v0.18.6
+replace (
+	k8s.io/api => k8s.io/api v0.18.6
+	k8s.io/apimachinery => k8s.io/apimachinery v0.18.6
+)

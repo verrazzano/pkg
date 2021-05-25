@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"testing"
 )
@@ -183,6 +184,33 @@ func TestTimes(t *testing.T) {
 	verifyDiff(t, fromObj, toObj, false, "Time empty")
 	toObj = X{Time: now.Add(time.Hour)}
 	verifyDiff(t, fromObj, toObj, true, "Time changed")
+}
+
+func TestResources(t *testing.T) {
+	r1 := corev1.ResourceRequirements{Limits: corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("1024Mi")}}
+	r2 := corev1.ResourceRequirements{Limits: corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("1Gi")}}
+	verifyDiff(t, r1, r2, false, "Same resource, different units")
+	r1 = corev1.ResourceRequirements{Limits: corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("1028Mi")}}
+	r2 = corev1.ResourceRequirements{Limits: corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("1Gi")}}
+	verifyDiff(t, r1, r2, true, "Different resource, different units")
+	r1 = corev1.ResourceRequirements{Limits: corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("1028Mi")}}
+	r2 = corev1.ResourceRequirements{Limits: corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("1030Mi")}}
+	verifyDiff(t, r1, r2, true, "Different resource, same units")
+	r1 = corev1.ResourceRequirements{Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1000m")}}
+	r2 = corev1.ResourceRequirements{Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}}
+	verifyDiff(t, r1, r2, false, "Same resource, different units")
+	r1 = corev1.ResourceRequirements{Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1001m")}}
+	r2 = corev1.ResourceRequirements{Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}}
+	verifyDiff(t, r1, r2, true, "Different resource, different units")
+	r1 = corev1.ResourceRequirements{Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1001m")}}
+	r2 = corev1.ResourceRequirements{Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1002m")}}
+	verifyDiff(t, r1, r2, true, "Different resource, same units")
+	r1 = corev1.ResourceRequirements{Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1000m")}, Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("3000m")}}
+	r2 = corev1.ResourceRequirements{Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}, Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("3")}}
+	verifyDiff(t, r1, r2, false, "Same resources, different units")
+	r1 = corev1.ResourceRequirements{Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1001m")}, Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1000m")}}
+	r2 = corev1.ResourceRequirements{Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}, Limits: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")}}
+	verifyDiff(t, r1, r2, true, "Different units for limits (but same resource), different resource for requests")
 }
 
 // One unit test that contains a complex diff and actually verifies the full output
