@@ -101,5 +101,6 @@ func GetHostnameFromGateway(namespace string, appConfigName string) (string, err
 
 	// this can happen if the app gateway has not been created yet, the caller should
 	// keep retrying and eventually we should get a gateway with a host
+	fmt.Printf("Could not find host in application ingress gateways in namespace: %s\n", namespace)
 	return "", nil
 }
