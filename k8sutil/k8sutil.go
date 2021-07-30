@@ -73,13 +73,17 @@ func GetIstioClientset() (*istioClient.Clientset, error) {
 	return cs, err
 }
 
+// GetHostnameFromGateway returns the host name from the application gateway that was
+// created by the ingress trait controller
 func GetHostnameFromGateway(namespace string, appConfigName string) (string, error) {
 	cs, err := GetIstioClientset()
 	if err != nil {
+		fmt.Printf("Could not get istio clientset: %v", err)
 		return "", err
 	}
 	gateways, err := cs.NetworkingV1alpha3().Gateways(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
+		fmt.Printf("Could not list application ingress gateways: %v", err)
 		return "", err
 	}
 
@@ -91,6 +95,7 @@ func GetHostnameFromGateway(namespace string, appConfigName string) (string, err
 	}
 
 	for _, gateway := range gateways.Items {
+		fmt.Printf("Found an app ingress gateway with name: %s\n", gateway.ObjectMeta.Name)
 		if len(gatewayName) > 0 && gatewayName != gateway.ObjectMeta.Name {
 			continue
 		}
