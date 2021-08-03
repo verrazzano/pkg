@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 
+	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istioClient "istio.io/client-go/pkg/clientset/versioned"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -19,11 +20,14 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
+// Name of Environment Variable for KUBECONFIG
+const ENV_VAR_KUBECONFIG = "KUBECONFIG"
+
 // Helper function to obtain the default kubeConfig location
 func GetKubeConfigLocation() (string, error) {
 
 	var kubeConfig string
-	kubeConfigEnvVar := os.Getenv("KUBECONFIG")
+	kubeConfigEnvVar := os.Getenv(ENV_VAR_KUBECONFIG)
 
 	if len(kubeConfigEnvVar) > 0 {
 		// Find using environment variables
@@ -38,18 +42,6 @@ func GetKubeConfigLocation() (string, error) {
 	return kubeConfig, nil
 }
 
-// GetKubernetesClientset returns the Kubernetes clientset for the cluster set in the environment
-func GetKubernetesClientset() (*kubernetes.Clientset, error) {
-	// use the current context in the kubeconfig
-	var clientset *kubernetes.Clientset
-	config, err := GetKubeConfig()
-	if err != nil {
-		return clientset, err
-	}
-	clientset, err = kubernetes.NewForConfig(config)
-	return clientset, err
-}
-
 // Returns kubeconfig from KUBECONFIG env var if set
 // Else from default location ~/.kube/config
 func GetKubeConfig() (*rest.Config, error) {
@@ -60,6 +52,18 @@ func GetKubeConfig() (*rest.Config, error) {
 	}
 	config, err = clientcmd.BuildConfigFromFlags("", kubeConfigLoc)
 	return config, err
+}
+
+// GetKubernetesClientset returns the Kubernetes clientset for the cluster set in the environment
+func GetKubernetesClientset() (*kubernetes.Clientset, error) {
+	// use the current context in the kubeconfig
+	var clientset *kubernetes.Clientset
+	config, err := GetKubeConfig()
+	if err != nil {
+		return clientset, err
+	}
+	clientset, err = kubernetes.NewForConfig(config)
+	return clientset, err
 }
 
 // GetIstioClientset returns the clientset object for Istio
@@ -74,17 +78,23 @@ func GetIstioClientset() (*istioClient.Clientset, error) {
 }
 
 // GetHostnameFromGateway returns the host name from the application gateway that was
-// created by the ingress trait controller
-func GetHostnameFromGateway(namespace string, appConfigName string) (string, error) {
-	cs, err := GetIstioClientset()
-	if err != nil {
-		fmt.Printf("Could not get istio clientset: %v", err)
-		return "", err
-	}
-	gateways, err := cs.NetworkingV1alpha3().Gateways(namespace).List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		fmt.Printf("Could not list application ingress gateways: %v", err)
-		return "", err
+// created for the ApplicationConfiguration with name appConfigName from list of input gateways. If
+// the input list of gateways is not provided, it is fetched from the kubernetes cluster
+func GetHostnameFromGateway(namespace string, appConfigName string, gateways ...istiov1alpha3.Gateway) (string, error) {
+	if len(gateways) == 0 {
+		cs, err := GetIstioClientset()
+		if err != nil {
+			fmt.Printf("Could not get istio clientset: %v", err)
+			return "", err
+		}
+
+		gatewayList, err := cs.NetworkingV1alpha3().Gateways(namespace).List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			fmt.Printf("Could not list application ingress gateways: %v", err)
+			return "", err
+		}
+
+		gateways = gatewayList.Items
 	}
 
 	// if an optional appConfigName is provided, construct the gateway name from the namespace and
@@ -94,11 +104,12 @@ func GetHostnameFromGateway(namespace string, appConfigName string) (string, err
 		gatewayName = fmt.Sprintf("%s-%s-gw", namespace, appConfigName)
 	}
 
-	for _, gateway := range gateways.Items {
-		fmt.Printf("Found an app ingress gateway with name: %s\n", gateway.ObjectMeta.Name)
+	for _, gateway := range gateways {
 		if len(gatewayName) > 0 && gatewayName != gateway.ObjectMeta.Name {
 			continue
 		}
+
+		fmt.Printf("Found an app ingress gateway with name: %s\n", gateway.ObjectMeta.Name)
 		if len(gateway.Spec.Servers) > 0 && len(gateway.Spec.Servers[0].Hosts) > 0 {
 			return gateway.Spec.Servers[0].Hosts[0], nil
 		}
