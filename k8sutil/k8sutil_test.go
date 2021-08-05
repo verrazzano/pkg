@@ -20,6 +20,23 @@ const dummyk8sHost = "http://localhost"
 const appConfigName = "test"
 const appConfigNamespace = "test"
 
+func TestGetKubeConfigLocationEnvVarTestKubeconfig(t *testing.T) {
+	asserts := assert.New(t)
+	// Preserve previous env var value
+	prevEnvVar := os.Getenv(k8sutil.ENV_VAR_TEST_KUBECONFIG)
+	randomKubeConfig := "/home/testing/somerandompath"
+	// Test using environment variable
+	err := os.Setenv(k8sutil.ENV_VAR_TEST_KUBECONFIG, randomKubeConfig)
+	asserts.NoError(err)
+	kubeConfigLoc, err := k8sutil.GetKubeConfigLocation()
+	asserts.NoError(err)
+	asserts.Equal(randomKubeConfig, kubeConfigLoc)
+	// Reset env variable
+	err = os.Setenv(k8sutil.ENV_VAR_TEST_KUBECONFIG, prevEnvVar)
+	asserts.NoError(err)
+
+}
+
 func TestGetKubeConfigLocationEnvVar(t *testing.T) {
 	asserts := assert.New(t)
 	// Preserve previous env var value

@@ -23,23 +23,25 @@ import (
 // Name of Environment Variable for KUBECONFIG
 const ENV_VAR_KUBECONFIG = "KUBECONFIG"
 
+// Name of Environment Variable for test KUBECONFIG
+const ENV_VAR_TEST_KUBECONFIG = "TEST_KUBECONFIG"
+
 // Helper function to obtain the default kubeConfig location
 func GetKubeConfigLocation() (string, error) {
-
-	var kubeConfig string
-	kubeConfigEnvVar := os.Getenv(ENV_VAR_KUBECONFIG)
-
-	if len(kubeConfigEnvVar) > 0 {
-		// Find using environment variables
-		kubeConfig = kubeConfigEnvVar
-	} else if home := homedir.HomeDir(); home != "" {
-		// Find in the ~/.kube/ directory
-		kubeConfig = filepath.Join(home, ".kube", "config")
-	} else {
-		// give up
-		return kubeConfig, errors.New("unable to find kubeconfig")
+	if testKubeConfig := os.Getenv(ENV_VAR_TEST_KUBECONFIG); len(testKubeConfig) > 0 {
+		return testKubeConfig, nil
 	}
-	return kubeConfig, nil
+
+	if kubeConfig := os.Getenv(ENV_VAR_KUBECONFIG); len(kubeConfig) > 0 {
+		return kubeConfig, nil
+	}
+
+	if home := homedir.HomeDir(); home != "" {
+		return filepath.Join(home, ".kube", "config"), nil
+	}
+
+	return "", errors.New("unable to find kubeconfig")
+
 }
 
 // Returns kubeconfig from KUBECONFIG env var if set
