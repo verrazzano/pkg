@@ -106,7 +106,6 @@ limitations under the License.
 istio.io/api
 -------- Copyrights
 Copyright 2016-2020 Istio Authors
-Copyright Istio Authors
 Copyright 2019 Istio Authors
 Copyright 2020 Istio Authors
 Copyright (c) 2013 TOML authors
@@ -157,7 +156,6 @@ Copyright 2014 The Kubernetes Authors.
 istio.io/client-go
 -------- Copyrights
 Copyright 2016-2020 Istio Authors
-Copyright Istio Authors
 Copyright 2019 Istio Authors
 Copyright 2015 Microsoft Corporation
 Copyright (c) 2013 TOML authors
@@ -219,14 +217,12 @@ Copyright 2014 The Kubernetes Authors.
 istio.io/gogo-genproto
 -------- Copyrights
 Copyright 2016-2019 Istio Authors
-Copyright Istio Authors
 Copyright 2019 Istio Authors
 
 -------- Dependency
 k8s.io/api
 -------- Copyrights
 Copyright 2019 The Kubernetes Authors.
-Copyright The Kubernetes Authors.
 Copyright 2017 The Kubernetes Authors.
 Copyright 2016 The Kubernetes Authors.
 Copyright 2018 The Kubernetes Authors.
@@ -242,14 +238,12 @@ Copyright 2014 The Kubernetes Authors.
 Copyright 2015 The Kubernetes Authors.
 Copyright 2016 The Kubernetes Authors.
 Copyright 2018 The Kubernetes Authors.
-Copyright The Kubernetes Authors.
 Copyright 2013 The Go Authors. All rights reserved.
 Copyright 2009 The Go Authors. All rights reserved.
 
 -------- Dependency
 k8s.io/client-go
 -------- Copyrights
-Copyright The Kubernetes Authors.
 Copyright 2017 The Kubernetes Authors.
 Copyright 2016 The Kubernetes Authors.
 Copyright 2014 The Kubernetes Authors.
