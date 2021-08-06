@@ -55,7 +55,6 @@ github.com/googleapis/gnostic
 -------- Copyrights
 Copyright 2017 Google Inc. All Rights Reserved.
 Copyright 2017, Google Inc.
-Copyright 2017 Google Inc. All Rights Reserved.\n" +
 
 -------- Dependency
 github.com/modern-go/concurrent
